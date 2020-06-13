@@ -1,0 +1,142 @@
+---
+title: "Logistic Regression - Predicting Diabetes Diagnosis"
+author: " Victor Uduma"
+subtitle: "05/18/2020"
+output: html_document
+---
+
+##################################################################################
+##                           Author: Victor Uduma                               ##
+##                         Program:Homework_4.rmd                               ##
+## Purpose:   perform logistic regressions models on the diabetes dataset       ##                    ##                                                                              ##
+##                        Date Created: 05/18/2020                              ##
+##################################################################################
+
+
+
+
+
+
+## Data Cleaning/Preparation
+I  first read in my diabetes dataset, I then created two new variables called weight and height SI, which was created by converting weight and height variables by multiplying them by 0.0254 and 0.453592. i then created another variable  called BMI which was calculated by squaring height SI and having it be divided by weight SI . i then created a new variable called BMI_categorized. i made it so  that people who were under 18.5 BMI were considered Underweight, people who's BMI were more than or equal to 18.5 and less than or equal to 25 were considered normal, people who's BMI were greater than 25 and less than or equal to 30 were considered Overweight, and lastly it considered anyone with a BMI over 30 Obese. I also recoded the insurance values, with 1 being the government, 2 being private and 3 not having any insurance at all. i recoded the smoking  variables  and made it so that 1 equals current smokers, 2 equals people who never smoked and 3 equals ex smokers 
+```{r warning=FALSE, message=FALSE, results="hide"}
+
+setwd('/Users/victoruduma/ice4') #set working directory 
+getwd()
+library(dplyr)
+library(Hmisc)
+library(ggplot2)
+library(summarytools)
+ 
+diabetes_df = read.csv('diabetes.csv')# read data in 
+diabetes_df$height.si = diabetes_df$height * 0.0254 #converting height 
+diabetes_df$weight.si = diabetes_df$weight *  0.453592 #converting weight
+diabetes_df$BMI = diabetes_df$weight.si/diabetes_df$height.si^2
+
+#recoded BMI categories
+diabetes_df$bmi_categorized = ifelse(diabetes_df$BMI < 18.5, 'underweight',
+                         ifelse(diabetes_df$BMI >= 18.5 & diabetes_df$BMI <= 25, 'normal',
+                                ifelse(diabetes_df$BMI > 25 & diabetes_df$BMI <= 30, 'overweight',
+                                       ifelse(diabetes_df$BMI > 30, 'Obese',
+                                              NA))))
+
+
+
+
+#recode insurance values 
+diabetes_df <- mutate(diabetes_df, insurance = ifelse(insurance == 1, 'government', insurance))
+diabetes_df <- mutate(diabetes_df, insurance = ifelse(insurance == 2, 'private', insurance))
+diabetes_df <- mutate(diabetes_df, insurance = ifelse(insurance == 0, 'none', insurance))
+
+#recode smoking values
+diabetes_df <- mutate(diabetes_df, smoking = ifelse(smoking == 1, 'current', smoking))
+diabetes_df <- mutate(diabetes_df, smoking = ifelse(smoking == 2, 'never', smoking))
+diabetes_df <- mutate(diabetes_df, smoking = ifelse(smoking == 3, 'ex-smoker', smoking))
+
+```
+
+
+## Exploratory Data Analysis
+in the dataset, there are 403 observations, with  28.46 percent of the observations being normal, 38.29 percent of observations being obese,  30.98 percent being overweight and 2.27 percent being underweight. in the observations, 58.06 percent are females while 41.94 percent are males. Only 15.38 have diabetes in the observations while 84.62 percent did not have diabetes. the average age rounded to be 47 and the average BMI was rounded to be 29.
+```{r warning=FALSE, message=FALSE, results="hide"}
+
+
+# find observations
+nrow(diabetes_df)
+
+# find percentages
+freq(diabetes_df$bmi_categorized)
+
+# percentage of each gender
+freq(diabetes_df$gender)
+
+#percentage diabetes
+freq(diabetes_df$dm)
+#average age
+mean(diabetes_df$age)
+
+#average bmi
+mean(diabetes_df$BMI,na.rm = T)
+
+```
+
+
+## Data Visualization
+for figure 1, we decided to create a barchart to show the number people who enrolled in each type of insurance, we saw that people enrolled in governemnt insurance the most, with private being the second most common, and people not having insurance at all being the least common.
+
+For figure 2 we made a Barchart to show the amount of people who smoked in the dataset, it showed that a majority of people didn't smoke while ex smokers were the least.
+
+For Figure 3 we made a scatter plot to see if there is a correlation between BMI and Cholesterol, we were able to determine that there is little correlation between BMI and Cholesterol and that they share no relationship with each other 
+
+for Figure 4 we made a historgram to see the age distribution, we could  determine that the values are slighlty skewed to the right of the graph as there are some people in the dataset who are the age of 75 or older.
+```{r warning=FALSE, message=FALSE}
+
+
+#create barchart for insurance 
+ggplot(data = diabetes_df) +
+  geom_bar(mapping = aes(x = insurance, fill = insurance))+
+  labs(title = "# of people who have insurance (figure 1)", x ="# type of insurance", y = "number of people")
+
+
+#create barchart for smoking 
+ggplot(data = diabetes_df) +
+  geom_bar(mapping = aes(x = smoking, fill = smoking))+
+  labs(title = "# of people who smoke (figure 2)", x ="# type of smoker", y = "number of people")
+
+#create scatterplot for relationship between BMI and cholestrol 
+ggplot(data= diabetes_df) +
+  geom_point(mapping = aes(x=BMI, y=chol))+
+  labs(title = "relationship between BMI and cholestorol (figure 3)", x = "BMI", y = "Cholestrol")
+
+
+#create historgram for age 
+ggplot(data= diabetes_df) +
+  geom_histogram(mapping = aes(x=age), fill="gold", color="orangered", binwidth = 5)+
+  labs(title = "age distribution graph (figure 4)", x = "Age", y = "# of people")
+
+
+```
+
+## Logistic Regression Results
+lastly we were able to perform a logistic regression model to determine whether or not BMI,age and gender have an effect on you getting diabetes. 
+
+for the BMI, I was able to determine that a 1 unit increase in BMI causes the log odds of getting diabetes to increase by 0.073, holding all other independent variables constant
+
+for Age, I was able to determine that a 1 year increase in age causes the log odds of getting diabetes to increase by 0.055, holding all other independent variables constant
+
+for gender, I determined the log odds of getting diabetes between someone who is male and someone who is female is 0.24, holding all other independent variables constant.
+
+As the age and BMI variables have p values lower than 0.05, we can conclude that having diabetes is associated with whether or not you have diabetes 
+```{r warning=FALSE, message=FALSE, results="hide"}
+
+#create a logotc regression model to determine wheter age,gender or BMI have an effect on diabetes 
+
+fit1 = glm(dm ~ age + factor(gender) + BMI, data = diabetes_df, family = "binomial")
+summary(fit1)
+
+
+
+
+
+```
+

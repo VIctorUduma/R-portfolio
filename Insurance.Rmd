@@ -1,0 +1,144 @@
+---
+title: "Linear Regression - Predicting Individual Medical Costs Billed by Health Insurance"
+author: "Victor Uduma"
+subtitle: "4/18/2020"
+output: html_document
+---
+
+##################################################################################
+##                           Author: Victor Uduma                               ##
+##                         Program:Homework_3.rmd                               ##
+## Purpose:   perform linear regressions models on the insurance dataset        ##                    ##                                                                              ##
+##                        Date Created: 05/04/2020                              ##
+##################################################################################
+
+
+
+
+
+## Exploratory Data Analysis
+in this assignment we are exploring the insurance dataset, which has 1338 observations and 7 categories. in the dataset, %50.52 of the observations are male, and %27.20 of the observations come from the southeast reigion of the united states. 79.52 percent of the observations do not smoke and 42.90 percent of observations have no children on their insurance. The average age for the observations is 39.2 with the standard deviation being 14.04, the average BMI is 30.67 and the standard deviation for BMI is 6.1. The average amount for charges is 13270 dollars  and the standard deviation is 12110.01 dollars.
+
+```{r warning=FALSE, message=FALSE, results="hide", include=FALSE}
+# insert import & exploratory data analysis code here
+setwd('/Users/victoruduma/ice4') #set working directory 
+getwd()
+library(ggplot2)
+library(summarytools)
+library(dplyr)
+assign_3 = read.csv('insurance.csv')
+nrow(assign_3)#checks number of observations
+ncol(assign_3)#checks number of categories 
+freq(assign_3$sex)#checks percentage of each sex
+freq(assign_3$region)# checks the percentage of people in each region 
+freq(assign_3$smoker)# checks the percentage of smokers and non smokers
+freq(assign_3$children)# checks the perectnage of people who have a certain number of children 
+mean(assign_3$age)# checks average age of observations 
+sd(assign_3$age)# calculates the standard devaition 
+mean(assign_3$bmi)# checks the average  bmi 
+sd(assign_3$bmi)#calculates standard deviation for BMI
+mean(assign_3$charges)# checks the average amount for charges 
+sd(assign_3$charges)# checks the standard deviation for charges 
+
+
+```
+
+
+## Data Visualization
+for the data visualization, I created 6 figures,  figures 1-4  consist of  boxplots  and 5-6  are scatterplots. 
+
+for figure 1, I created a boxplot that showed the medical costs based on the number of children a person has. based off the chart it is determined tha those who have no children have the  highest  average medical costs and have the highest amont of outliers while those who have 5 children have the least average amount of medical costs and have the least amount of outliers. 
+
+for figure 2 we checked the medical costs for people who smoke and don't smoke. people who smoked had a higher medical cost average than those who didn't, although  non smokers have more outliers compared to smokers. 
+
+in figure 3 we look at the medical costs based on what US reigion they were in. those in the northeast had the highest averge medical costs while every other reigion average medical costs were roughly the same. there were outliers in each of categories, with the southwest having the most and souteast having the least. 
+
+in figure 4 we have medical costs based on sex, with the average medical costs being the same between them, although women tended to have more outliers compared to men. 
+
+for  figure 5, we checked to see if there was a correlation between medical costs and the age of particpants using a scatterplot.what we found was that there is a small positive  linear correlation between the age of the participants and the medical costs. 
+
+for figure 6 we checked the correlation between medical costs and body mass index using scatterplot as well. we were able to figure that there is a small positive linear correlation between body mass index and medical costs. 
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+# insert data visualization code here
+fig_1 = ggplot(data = assign_3)+
+  geom_boxplot(mapping = aes(x = as.factor(children), y = charges, fill=as.factor(children)))+
+  labs(title = "insurance charges by number of children(figure1)", x= "# of children", y = "medical costs") #creates a boxplot for medical costs based on the number of children you have 
+fig_2 = ggplot(data = assign_3)+
+  geom_boxplot(mapping = aes(x = as.factor(smoker), y = charges, fill=as.factor(smoker)))+
+  labs(title = "insurance charges based on if you smoke or not(figure2)", x= "smoker/non smoker", y = "medical costs")# creates a boxplot to show medical costs based on whether you smoke or not
+
+fig_3 = ggplot(data = assign_3)+
+  geom_boxplot(mapping = aes(x = as.factor(region), y = charges, fill=as.factor(region)))+
+  labs(title = "insurance charges based on region (figure3)", x= " US region", y = "medical costs")#creates boxplot to show medical costs based on the US region you stayed in 
+
+
+fig_4 = ggplot(data = assign_3)+
+  geom_boxplot(mapping = aes(x = as.factor(sex), y = charges, fill=as.factor(sex)))+
+  labs(title = "insurance charges based on sex(figure4)", x= " sex", y = "medical costs")# created a boxplot that showed medical costs based on sex 
+
+#fig_5 = ggplot(data = assign_3)+
+ # geom_point(mapping = aes(x = age, y = charges, fill = age)) + 
+  #labs(title = " insurance based on age(figure 5)", x = "age of participants", y = " medical costs" )
+
+fig_5 = assign_3 %>%
+  ggplot(aes(y = charges, x = age)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs( y = "medical costs", x = "age of participants ", title = " insurance based on age")#created a scatterplot that showed  if there is a linear relationship between age and medical costs 
+
+
+
+
+
+#fig_6 = ggplot(data = assign_3)+
+  #geom_point(mapping = aes(x = bmi, y = charges, fill = bmi)) + 
+  #labs(title = " insurance based on body mass index(BMI)(figure6)" , x = "BMI", y = " medical costs" )
+
+fig_6 = assign_3 %>%
+  ggplot(aes(y = charges, x = bmi)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs( y = "medical costs", x = "bmi", title = " insurance based on body mass index")#created a scatterplot to show if there is a linear relationship between BMI and medical costs 
+
+fig_1
+fig_2
+fig_3
+fig_4
+fig_5
+fig_6
+
+
+
+```
+
+## Multiple Linear Regression Results
+for the multiple linear regression, I decided to make the charges our outcome variable and the rest of our variables perdictors. after creating our multiple linear regression, we were able to find the intercept coeffcient to be -11927.17 which means that when all the perdictor varibles are equal to zero, the medical cost charged to an individual is $-11927.17. holding all other independent variables constant.
+
+for the age perdictor, i was able to   able to determine that for every 1 year increase in the age of an individual, the medical cost billed by health insurance increases by 257.19 dollars, holding all other independent variales constant.
+
+for the BMI perdictor, I determined that for every 1 unit increase in BMI, the medical costs that are billed by health insurances increases 336.91 dollars. holding all other independent varibles equal.
+
+for the sex perdictor, the medical costs billed by health insurance is 128.16 dollars lower for men than it is for women, holding all other independent variables constant
+
+for the smoker perdictor, the medical costs billed by health insurance  is  23836.41 dollars higher for people who do smoke than it is for people who don't smoke, holding all independent variables equal constant.
+
+for the northwest region, the medical costs billed by health insurance is 380.04 dollars lower for people living in the northwest region of the United States than it is for people livinf  in the northeast region of the united states, holding all other independent variables constant.
+
+in the southeast region, the medical costs billed by health insurance is 1033.14 dollars lower for people living  in the southeast region than it is for people living in the northeast region, holding all other independent variables constant
+
+in the southwest region, the medical costs billed by health insurance is 952.89 lower for people living in the southwest region than it is for people living in the north east region, holding all other independent  variables constant
+```{r message=FALSE, warning=FALSE, include=FALSE, results="hide"}
+# insert linear regression code
+mlr_3 = lm(charges ~ bmi + age + factor(sex) + factor(region) + factor(smoker) + factor(children), data = assign_3)#created a multilinear regression model with medical costs  as the outcome variable and every other variable as perdictors 
+summary(mlr_3) # created a summary in order to check the coeffcient and intercept 
+
+```
+
+## Linear Regression Assumptions
+we then check whether or not the assumptions for the linear test are violated or not, we do this by running a plot function that would provide four different plots that check to see if any assumptions were violated. based on the third plot, we can see that the  homoscedasticity was violated, as the   red line is not  horizontal and flat and the data points are not evenly spread out on each side.
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+# insert regression assumption plots code
+plot(mlr_3)# created a plot to check assumptions
+
+```
+
