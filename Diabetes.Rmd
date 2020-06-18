@@ -5,12 +5,7 @@ subtitle: "05/18/2020"
 output: html_document
 ---
 
-##################################################################################
-##                           Author: Victor Uduma                               ##
-##                         Program:Homework_4.rmd                               ##
-## Purpose:   perform logistic regressions models on the diabetes dataset       ##                    ##                                                                              ##
-##                        Date Created: 05/18/2020                              ##
-##################################################################################
+
 
 
 
