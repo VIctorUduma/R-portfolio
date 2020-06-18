@@ -5,12 +5,7 @@ subtitle: "4/18/2020"
 output: html_document
 ---
 
-##################################################################################
-##                           Author: Victor Uduma                               ##
-##                         Program:Homework_3.rmd                               ##
-## Purpose:   perform linear regressions models on the insurance dataset        ##                    ##                                                                              ##
-##                        Date Created: 05/04/2020                              ##
-##################################################################################
+
 
 
 
